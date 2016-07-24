@@ -24,10 +24,6 @@ Here it is in action:
 - data gathering for further analysis
 - visualization
 
-## ELI5: setting up
-
-[/u/gprez](https://www.reddit.com/u/gprez) made [a great tutorial on Reddit](https://www.reddit.com/r/pokemongodev/comments/4tz66s/pokeminer_your_individual_pokemon_locations/d5lovb6). Check it out if you're confused after reading this readme.
-
 ## Running
 
 The only parameter worker accepts is *step limit*, just as in `example.py`.
@@ -51,11 +47,6 @@ DB_ENGINE = 'sqlite:///db.sqlite'  # anything SQLAlchemy accepts
 MAP_START = (12.3456, 14.5)  # top left corner
 MAP_END = (13.4567, 15.321)  # bottom right corner
 GRID = (4, 5)  # row, column
-# LAT_GAIN and LON_GAIN can be configured to tell how big a space between
-# points visited by worker should be. LAT_GAIN should also compensate for
-# differences in distance between degrees as you go north/south.
-LAT_GAIN = 0.0015
-LON_GAIN = 0.0025
 
 ACCOUNTS = [
     # username, password, service (google/ptc)
@@ -63,15 +54,6 @@ ACCOUNTS = [
     ('trainer2', 'secret', 'ptc'),
     ('trainer3', 'secret', 'google'),
     # ...
-]
-
-# Trash Pokemon won't be shown on the live map.
-# Their data will still be collected to the database.
-TRASH_IDS = [16, 19, 41, 96]
-
-# List of stage 2 & rare evolutions to show in the report
-STAGE2 = [
-    3, 6, 9, 12, 15, 18, 31, 34, 45, 62, 65, 68, 71, 76, 94, 139, 141, 149
 ]
 ```
 
