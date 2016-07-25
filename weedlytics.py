@@ -95,8 +95,8 @@ def fullmap(pokemon_id):
         	'historical-map.html',
        		 key=GOOGLEMAPS_KEY,
        		 fullmap=get_map(),
-       		 auto_refresh=AUTO_REFRESH * 1000
-   	    )
+		 auto_refresh=AUTO_REFRESH * 1000
+       	    )
     return "not a pokemon"
     
 

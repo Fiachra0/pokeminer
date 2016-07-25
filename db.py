@@ -71,4 +71,5 @@ def get_sightings(session):
 def get_pokemon_history(session, pokedex_entry):
     return session.query(Sighting) \
 	.filter(Sighting.pokemon_id == pokedex_entry) \
-	.limit(1000)
+	.order_by(Sighting.expire_timestamp) \
+	.limit(400) 

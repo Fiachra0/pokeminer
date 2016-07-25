@@ -47,7 +47,7 @@
 
         window.setInterval(setLabelTime, 1000);
     </script>
-
+  {% if auto_refresh %}
     <script type="text/javascript">
         var baseURL = location.protocol + "//" + location.hostname + (location.port ? ":"+location.port: "");
         var searchPokemon = (location.pathname).substring(((location.pathname).lastIndexOf('/')) + 1);
@@ -220,7 +220,7 @@
                             });
                         })(item["infobox"], map, marker);
                     }
-
+		    /*
                     (function(_marker, _disappearsAt){
                         if(_disappearsAt < 0){
 
@@ -230,11 +230,12 @@
                         }
                         _marker.key = key;
                     })(marker, disappearsAt);
+		   */
                 }
 
-
+	   toggleHeatmap();
 	   });
-	  toggleHeatmap();
+	  
         }
         //window.setInterval(updateMap, {{ auto_refresh }});
     </script>
