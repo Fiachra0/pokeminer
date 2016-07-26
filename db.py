@@ -60,7 +60,6 @@ def add_sighting(session, spawn_id, pokemon):
     if existing:
         return
     session.add(obj)
-   
     notifier.pokemon_found(obj)
 
 def get_sightings(session):

@@ -86,6 +86,11 @@ def pokemon_json(pokemon_id):
 		return json.dumps(search_pokemon(pokedex_number))
   return "not a pokemon"
 
+#route for webhook
+@app.route('/recent/rare/ajax')
+def recent_rare():
+  return "rare pokemans"
+
 #route for pokemon maps
 @app.route('/pokemon/<pokemon_id>')
 def fullmap(pokemon_id):
@@ -98,6 +103,7 @@ def fullmap(pokemon_id):
 		 auto_refresh=AUTO_REFRESH * 1000
        	    )
     return "not a pokemon"
+
     
 
 #open a session and query for pokemon seen by pokedex_entry

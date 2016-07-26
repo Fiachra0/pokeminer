@@ -3,3 +3,7 @@
 config.py
 db.sqlite
 *.log
+backup
+pokeminerenv
+db.sql
+*.py2
