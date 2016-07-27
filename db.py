@@ -13,6 +13,12 @@ try:
 except ImportError, AttributeError:
     DB_ENGINE = 'sqlite:///db.sqlite'
 
+def alchemyencoder(obj):
+    """JSON encoder function for SQLAlchemy special classes."""
+    if isinstance(obj, datetime.date):
+        return obj.isoformat()
+    elif isinstance(obj, decimal.Decimal):
+        return float(obj)
 
 def get_engine():
     return create_engine(DB_ENGINE)
@@ -72,3 +78,63 @@ def get_pokemon_history(session, pokedex_entry):
 	.filter(Sighting.pokemon_id == pokedex_entry) \
 	.order_by(Sighting.expire_timestamp) \
 	.limit(400) 
+
+def get_session_stats(session):
+    min_max_query = session.execute('''
+        SELECT
+            MIN(expire_timestamp) ts_min,
+            MAX(expire_timestamp) ts_max,
+            COUNT(*)
+        FROM `sightings`;
+    ''')
+    min_max_result = min_max_query.first()
+    length_hours = (min_max_result[1] - min_max_result[0]) // 3600
+    # Convert to datetime
+    return {
+        'start': datetime.fromtimestamp(min_max_result[0]),
+        'end': datetime.fromtimestamp(min_max_result[1]),
+        'count': min_max_result[2],
+        'length_hours': length_hours,
+        'per_hour': min_max_result[2] / length_hours,
+    }
+
+def get_nonexistent_pokemon(session):
+    result = []
+    query = session.execute('SELECT DISTINCT pokemon_id FROM sightings')
+    db_ids = [r[0] for r in query.fetchall()]
+    for pokemon_id in range(1, 152):
+        if pokemon_id not in db_ids:
+            result.append(pokemon_id)
+    return result
+
+def get_top_pokemon(session, count=30, order='DESC',order_by='how_many'):
+    query = session.execute("SELECT pokemon_id, COUNT(*) how_many FROM sightings GROUP BY pokemon_id ORDER BY {order_by} {order} LIMIT {count}".format(order=order, count=count, order_by=order_by))
+    pokemons = [dict(r) for r in query.fetchall()]
+    return pokemons
+
+def get_common_spawns(session, count=100, order='DESC'):
+    query = session.execute(u'''
+        SELECT lat, lon, count(*) how_many
+	FROM sightings
+	GROUP BY lat,lon
+	ORDER BY how_many {order}
+	LIMIT {count};
+    '''.format(order=order, count=count))
+    pokemons = [dict(r) for r in query.fetchall()]
+    return pokemons
+
+def get_pokemon_spawned_at(session, lat, lon):
+    query = session.execute(u"""
+        SELECT pokemon_id, count(*) how_many
+	FROM sightings
+	WHERE lat = '{lat}' AND lon ='{lon}'
+	GROUP BY pokemon_id;
+    """.format(lat=lat, lon=lon))
+    pokemons = [dict(r) for r in query.fetchall()]
+    return pokemons
+
+def get_common_pokemon_spawns(session, pokemon_id, order='DESC',count=100):
+    query = session.execute('SELECT pokemon_id, lat, lon, count(*) how_many FROM sightings where pokemon_id = {pokemon_id} GROUP BY lat, lon ORDER BY how_many {order} LIMIT {count};'.format(pokemon_id=pokemon_id, order=order, count=count))
+    pokemons = [dict(r) for r in query.fetchall()]
+    return pokemons
+

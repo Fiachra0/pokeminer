@@ -86,10 +86,39 @@ def pokemon_json(pokemon_id):
 		return json.dumps(search_pokemon(pokedex_number))
   return "not a pokemon"
 
-#route for webhook
-@app.route('/recent/rare/ajax')
-def recent_rare():
-  return "rare pokemans"
+#route for finding top seen pokemon
+@app.route('/pokemon/top/json')
+def find_most_seen():
+  return json.dumps(search_top_pokemon('30','DESC'))
+
+#route for finding least seen pokemon
+@app.route('/pokemon/bottom/json')
+def find_least_seen():
+  return json.dumps(search_top_pokemon('30','ASC'))
+
+#route for finding all seen pokemon
+@app.route('/pokemon/all/json')
+def find_all_seen():
+  return json.dumps(search_top_pokemon('151','DESC','pokemon_id'))
+
+#route for finding most common spawns
+@app.route('/pokemon/spawns/all/json')
+def find_common_spawns():
+  return json.dumps(search_common_spawns('100','DESC'))
+
+#route for finding a pokemons common spawns
+@app.route('/pokemon/spawns/<pokemon_id>/json')
+def find_common_pokemon_spawns(pokemon_id):
+  for pokedex_number, pokemon_name in pokemon_names.items():
+	if  pokedex_number == str(pokemon_id) or pokemon_name.lower() == str(pokemon_id).lower():
+	   return json.dumps(search_common_pokemon_spawns(pokemon_id))
+  return "not a pokemon"
+
+#route for finding what spawned at this point
+@app.route('/pokemon/spawns/<lat>/<lon>/json')
+def find_spawned_at(lat,lon):
+  return json.dumps(search_pokemon_spawned_at(lat,lon))
+
 
 #route for pokemon maps
 @app.route('/pokemon/<pokemon_id>')
@@ -104,12 +133,38 @@ def fullmap(pokemon_id):
        	    )
     return "not a pokemon"
 
-    
+#queries the database and sends the result back
+def search_top_pokemon(count, order, order_by='how_many'):
+  session = db.Session()
+  pokemons = db.get_top_pokemon(session,count,order, order_by)
+  session.close
+  return pokemons
+
+#queries the database and sends the result back
+def search_common_spawns(count, order):
+  session = db.Session()
+  pokemons = db.get_common_spawns(session,count,order)
+  session.close
+  return pokemons
+
+#queries the database to find which pokemon spawned at the coords
+def search_pokemon_spawned_at(lat,lon):
+  session = db.Session()
+  pokemons = db.get_pokemon_spawned_at(session,lat,lon)
+  session.close
+  return pokemons
+
+#queries the database to find which  spawns are common for this pokemon
+def search_common_pokemon_spawns(pokemon_id, order='DESC', count=100):
+  session = db.Session()
+  pokemons = db.get_common_pokemon_spawns(session,pokemon_id,order,count)
+  session.close
+  return pokemons
+
 
 #open a session and query for pokemon seen by pokedex_entry
 def search_db(pokedex_number):
   session = db.Session()
-  #pokemons = db.get_pokemon_history(session,pokedex_number)
   pokemons = db.get_pokemon_history(session,pokedex_number)
   session.close
   return pokemons
