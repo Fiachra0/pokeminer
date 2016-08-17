@@ -63,7 +63,10 @@ app= create_app()
 #for an analytics dashboard in the future
 @app.route('/')
 def dashboard():
-    return "Dashboard goes here"
+    return render_template(
+		'newmap.html'
+    )
+
 
 #Create REST API for map config
 @app.route('/config')
@@ -77,24 +80,28 @@ def config():
         'identifier': 'fullmap'
     })
 
+@app.route('/data')
+def pokemon_data():
+    return json.dumps(get_pokemarkers())
+
 #Route for  API calls formatted into JSON
 @app.route('/pokemon/<pokemon_id>/json')
 def pokemon_json(pokemon_id):
   pokemon_id2 = "1"
   for pokedex_number, pokemon_name in pokemon_names.items():
 	if  pokedex_number == str(pokemon_id) or pokemon_name.lower() == str(pokemon_id).lower():
-		return json.dumps(search_pokemon(pokedex_number))
+                return json.dumps(search_pokemon(pokedex_number))
   return "not a pokemon"
 
 #route for finding top seen pokemon
 @app.route('/pokemon/top/json')
 def find_most_seen():
-  return json.dumps(search_top_pokemon('30','DESC'))
+  return json.dumps(search_top_pokemon('10','DESC'))
 
 #route for finding least seen pokemon
 @app.route('/pokemon/bottom/json')
 def find_least_seen():
-  return json.dumps(search_top_pokemon('30','ASC'))
+  return json.dumps(search_top_pokemon('10','ASC'))
 
 #route for finding all seen pokemon
 @app.route('/pokemon/all/json')
@@ -138,6 +145,10 @@ def search_top_pokemon(count, order, order_by='how_many'):
   session = db.Session()
   pokemons = db.get_top_pokemon(session,count,order, order_by)
   session.close
+  for pokemon in pokemons:
+	for pokedex_number,pokedex_name in pokemon_names.items():
+	  if str(pokemon['pokemon_id']) == pokedex_number:
+		pokemon.update({'name': pokedex_name})
   return pokemons
 
 #queries the database and sends the result back
@@ -226,4 +237,4 @@ def get_map():
 
 if __name__ == '__main__':
     args = get_args()
-    app.run(debug=True, threaded=True, host=args.host, port=args.port)
+    app.run(debug=True)

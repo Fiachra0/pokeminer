@@ -26,6 +26,9 @@ def get_engine():
 Base = declarative_base()
 
 
+def get_engine_name(session):
+    return session.connection().engine.name
+
 class Sighting(Base):
     __tablename__ = 'sightings'
 
@@ -78,6 +81,42 @@ def get_pokemon_history(session, pokedex_entry):
 	.filter(Sighting.pokemon_id == pokedex_entry) \
 	.order_by(Sighting.expire_timestamp) \
 	.limit(400) 
+
+
+def get_forts(session):
+    if get_engine_name(session) == 'sqlite':
+        # SQLite version is slooooooooooooow when compared to MySQL
+        where = '''
+            WHERE fs.fort_id || '-' || fs.last_modified IN (
+                SELECT fort_id || '-' || MAX(last_modified)
+                FROM fort_sightings
+                GROUP BY fort_id
+            )
+        '''
+    else:
+        where = '''
+            WHERE (fs.fort_id, fs.last_modified) IN (
+                SELECT fort_id, MAX(last_modified)
+                FROM fort_sightings
+                GROUP BY fort_id
+            )
+        '''
+    query = session.execute('''
+        SELECT
+            fs.fort_id,
+            fs.id,
+            fs.team,
+            fs.prestige,
+            fs.guard_pokemon_id,
+            fs.last_modified,
+            f.lat,
+            f.lon
+        FROM fort_sightings fs
+        JOIN forts f ON f.id=fs.fort_id
+        {where}
+    '''.format(where=where))
+    return query.fetchall()
+
 
 def get_session_stats(session):
     min_max_query = session.execute('''
